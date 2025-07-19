@@ -6,6 +6,9 @@ import Register from "./pages/Register";
 import { ToastContainer } from "react-toastify";
 import Cart from "./pages/Cart";
 import Login from "./pages/Login";
+import { useEffect } from "react";
+import { useAppDispatch } from "./store/hooks";
+import { getProfileThunk } from "./store/thunk/auth";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +37,12 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(getProfileThunk());
+  }, [])
+
   return (
     <>
       <ToastContainer />

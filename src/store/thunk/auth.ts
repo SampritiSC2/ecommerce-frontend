@@ -1,8 +1,9 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { login, type LoginPayload } from "../../services/auth.service";
+import { getProfile, login, type LoginPayload } from "../../services/auth.service";
 import type {
   LoginErrorResponse,
   LoginResponse,
+  User,
 } from "../../types/auth/auth.model";
 import type { AxiosError } from "axios";
 
@@ -25,4 +26,17 @@ const loginThunk = createAsyncThunk<
   }
 });
 
-export { loginThunk };
+const getProfileThunk = createAsyncThunk<
+  User,
+  undefined,
+  { rejectValue: string }
+>("auth/profile", async (_, { rejectWithValue }) => {
+  try {
+    return await getProfile();
+  } catch (err) {
+    const axiosError = err as AxiosError<Pick<LoginErrorResponse, 'message' | 'statusCode'>>;
+    return rejectWithValue(axiosError?.response?.data?.message ?? "Unauthorized")
+  }
+});
+
+export { loginThunk, getProfileThunk };

@@ -3,6 +3,7 @@ import type {
   LoginResponse,
   RegisterErrorResponse,
   RegistrationResponse,
+  User,
 } from "../types/auth/auth.model";
 import api from "../api/api";
 
@@ -57,5 +58,10 @@ export async function login(
   const response = await api.post<LoginResponse>("/auth/login", payload, {
     withCredentials: true,
   });
+  return response.data;
+}
+
+export async function getProfile(): Promise<User> {
+  const response = await api.get<User>("/auth/profile");
   return response.data;
 }
