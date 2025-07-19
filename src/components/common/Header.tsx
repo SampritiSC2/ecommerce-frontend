@@ -19,12 +19,14 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { CategoryService } from "../../services/category.service";
 import type { Category } from "../../types/category/category.model";
+import { useAppSelector } from "../../store/hooks";
 
 const Header = () => {
   const [category, setCategory] = useState("All");
   const [categories, setCategories] = useState<Category[]>([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [hovering, setHovering] = useState(false);
+  const user = useAppSelector(state => state?.auth?.user);
 
   const handleMouseEnter = (event) => {
     setAnchorEl(event.currentTarget);
@@ -173,7 +175,7 @@ const Header = () => {
               <Box display="flex" alignItems="center">
                 <Box>
                   <Typography variant="caption" color="white">
-                    Hello, sign in
+                    Hello {user?.username ?? 'anonymous'},
                   </Typography>
                   <Typography variant="body2" color="white" fontWeight="bold">
                     Account & Lists
