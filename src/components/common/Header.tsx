@@ -26,7 +26,10 @@ const Header = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [hovering, setHovering] = useState(false);
-  const user = useAppSelector(state => state?.auth?.user);
+  const user = useAppSelector((state) => state?.auth?.user);
+  const totalQuantity = useAppSelector(
+    (state) => state?.cart?.cart?.totalQuantity
+  );
 
   const handleMouseEnter = (event) => {
     setAnchorEl(event.currentTarget);
@@ -175,7 +178,7 @@ const Header = () => {
               <Box display="flex" alignItems="center">
                 <Box>
                   <Typography variant="caption" color="white">
-                    Hello {user?.username ?? 'anonymous'},
+                    Hello {user?.username ?? "anonymous"},
                   </Typography>
                   <Typography variant="body2" color="white" fontWeight="bold">
                     Account & Lists
@@ -247,7 +250,7 @@ const Header = () => {
                 fontWeight="bold"
                 sx={{ ml: 0.2 }}
               >
-                Cart(0)
+                Cart({totalQuantity ?? 0})
               </Typography>
             </Box>
           </Box>

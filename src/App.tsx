@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import { useEffect } from "react";
 import { useAppDispatch } from "./store/hooks";
 import { getProfileThunk } from "./store/thunk/auth";
+import { getCurrentUserCartThunk } from "./store/thunk/cart";
 
 const router = createBrowserRouter([
   {
@@ -40,8 +41,14 @@ const App = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(getProfileThunk());
-  }, [])
+    (async () => {
+      if (localStorage.getItem("accessToken")) {
+        await dispatch(getProfileThunk()).unwrap();
+        await dispatch(getCurrentUserCartThunk()).unwrap();
+        localStorage.removeItem("cartId");
+      }
+    })();
+  }, []);
 
   return (
     <>

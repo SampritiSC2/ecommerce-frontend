@@ -44,3 +44,14 @@ export async function cartById(cartId: string) {
     return undefined;
   }
 }
+
+// To fetch the current logged in user's cart
+export async function getCurrentUserCart() {
+  const cartId = localStorage.getItem(CARTID_KEY);
+  const response = await api.get<CartResponse | null>(`/cart/current`, {
+    params: {
+      cartId: cartId ?? "-1",
+    },
+  });
+  return response.data;
+}

@@ -13,6 +13,8 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { loginThunk } from "../store/thunk/auth";
 import { useAppDispatch } from "../store/hooks";
+import { getCurrentUserCartThunk } from "../store/thunk/cart";
+import { CARTID_KEY } from "../constants/cart.constants";
 
 const schema = z.object({
   email: z.string().min(1, "Email is required").email("Enter a valid email"),
@@ -38,6 +40,8 @@ const Login = () => {
   const handleLogin = async ({ email, password }: FormData) => {
     try {
       const res = await dispatch(loginThunk({ email, password })).unwrap();
+      await dispatch(getCurrentUserCartThunk()).unwrap();
+      localStorage.removeItem(CARTID_KEY);
       toast.success("Login successful!");
       navigate("/"); // Redirect after login
     } catch (error) {
