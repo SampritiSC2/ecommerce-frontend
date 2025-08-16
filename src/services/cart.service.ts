@@ -8,6 +8,12 @@ export interface AddToCartPayload {
   cartId?: string;
 }
 
+export interface DeleteFromCartPayload {
+  productId: string;
+  quantity: number;
+  cartId: string;
+}
+
 export async function addToCart(productId: string, quantity: number): Promise<CartResponse> {
   const payload: AddToCartPayload = {
     productId,
@@ -20,7 +26,7 @@ export async function addToCart(productId: string, quantity: number): Promise<Ca
 
   const response = await api.post<CartResponse>('/cart', payload);
   const cartId = response.data?.cartId;
-  if (cartId && localStorage.getItem(CARTID_KEY) !== cartId) {
+  if (cartId && localStorage.getItem(CARTID_KEY) !== cartId && !localStorage.getItem('accessToken')) {
     localStorage.setItem(CARTID_KEY, cartId);
   }
   return response.data;
@@ -28,6 +34,17 @@ export async function addToCart(productId: string, quantity: number): Promise<Ca
 
 export async function cartById(cartId: string): Promise<CartResponse> {
   const response = await api.get<CartResponse>(`/cart/${cartId}`);
+  return response.data;
+}
+
+export async function deleteCartItem(productId: string, quantity: number, cartId: string): Promise<CartResponse> {
+  const response = await api.delete<CartResponse>('/cart', {
+    data: {
+      productId,
+      quantity,
+      cartId,
+    },
+  });
   return response.data;
 }
 

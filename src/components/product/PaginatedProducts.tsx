@@ -3,9 +3,8 @@ import { Box, Card, CardMedia, CardContent, Typography, TablePagination, Button 
 import { getPaginatedData } from '../../services/product.service';
 import type { PaginatedResponse, Product } from '../../types/product/product.model';
 import { toast } from 'react-toastify';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { addToCartThunk, getCartByIdThunk, getCurrentUserCartThunk } from '../../store/thunk/cart';
-import { CARTID_KEY } from '../../constants/cart.constants';
+import { useAppDispatch } from '../../store/hooks';
+import { addToCartThunk } from '../../store/thunk/cart';
 
 const PaginatedProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -13,7 +12,6 @@ const PaginatedProducts = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [data, setData] = useState<PaginatedResponse | null>(null);
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth.user);
 
   useEffect(() => {
     async function fetchData() {
@@ -39,14 +37,6 @@ const PaginatedProducts = () => {
   const handleAddToCart = async (productId: string) => {
     try {
       await dispatch(addToCartThunk({ productId, quantity: 1 })).unwrap();
-      const cartId = localStorage.getItem(CARTID_KEY);
-
-      if (user) {
-        await dispatch(getCurrentUserCartThunk()).unwrap();
-      } else if (cartId) {
-        await dispatch(getCartByIdThunk(cartId)).unwrap();
-      }
-
       toast.success('Product added to cart successfully');
     } catch (err) {
       console.log(err);

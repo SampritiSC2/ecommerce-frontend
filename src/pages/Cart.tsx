@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import { CARTID_KEY } from '../constants/cart.constants';
 import { Box, Button, Card, CardContent, CardMedia, Divider, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -8,10 +6,12 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import type { CartItem } from '../types/cart/cart-response.model';
 import type { Product } from '../types/product/product.model';
 import EmptyCart from '../components/cart/EmptyCart';
-import { useAppSelector } from '../store/hooks';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { addToCartThunk, deleteItemFromCartThunk } from '../store/thunk/cart';
 
 const Cart = () => {
   const { cart: cartData, loading } = useAppSelector((state) => state.cart);
+  const dispatch = useAppDispatch();
 
   if (loading) {
     return <h1>Loading Cart Data..</h1>;
@@ -23,6 +23,22 @@ const Cart = () => {
   if (!cartData?.items?.length) {
     return <EmptyCart message='No items in the cart.' />;
   }
+
+  const handleAddToCart = async (productId: string) => {
+    try {
+      await dispatch(addToCartThunk({ productId, quantity: 1 })).unwrap();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleRemoveItemFromCart = async (productId: string, quantity: number, cartId: string) => {
+    try {
+      await dispatch(deleteItemFromCartThunk({ productId, quantity, cartId })).unwrap();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -71,11 +87,13 @@ const Cart = () => {
                         mt: 1,
                         gap: 1,
                       }}>
-                      <IconButton size='small'>
+                      <IconButton
+                        size='small'
+                        onClick={() => handleRemoveItemFromCart(product._id, 1, cartData.cartId)}>
                         <RemoveIcon />
                       </IconButton>
                       <Typography>{item.quantity}</Typography>
-                      <IconButton size='small'>
+                      <IconButton size='small' onClick={() => handleAddToCart(product._id)}>
                         <AddIcon />
                       </IconButton>
                     </Box>
@@ -83,7 +101,9 @@ const Cart = () => {
 
                   <Box>
                     <Typography variant='subtitle1'>${(product.price * item.quantity).toFixed(2)}</Typography>
-                    <IconButton color='error'>
+                    <IconButton
+                      color='error'
+                      onClick={() => handleRemoveItemFromCart(product._id, item.quantity, cartData.cartId)}>
                       <DeleteIcon />
                     </IconButton>
                   </Box>

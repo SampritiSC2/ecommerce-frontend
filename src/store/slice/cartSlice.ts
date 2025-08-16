@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { CartResponse } from '../../types/cart/cart-response.model';
-import { addToCartThunk, getCartByIdThunk, getCurrentUserCartThunk } from '../thunk/cart';
+import { addToCartThunk, deleteItemFromCartThunk, getCartByIdThunk, getCurrentUserCartThunk } from '../thunk/cart';
 
 type CartState = {
   loading: boolean;
@@ -48,6 +48,10 @@ const cartSlice = createSlice({
       state.loading = false;
       state.cart = null;
       state.error = action.payload ?? null;
+    });
+    // Delete Item from cart
+    builder.addCase(deleteItemFromCartThunk.fulfilled, (state, action) => {
+      state.cart = action.payload;
     });
   },
 });
