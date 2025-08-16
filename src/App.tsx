@@ -1,36 +1,37 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import HomePage from "./pages/Home";
-import ProductDetailPage from "./pages/ProductDetail";
-import RootLayout from "./pages/RootLayout";
-import Register from "./pages/Register";
-import { ToastContainer } from "react-toastify";
-import Cart from "./pages/Cart";
-import Login from "./pages/Login";
-import { useEffect } from "react";
-import { useAppDispatch } from "./store/hooks";
-import { getProfileThunk } from "./store/thunk/auth";
-import { getCurrentUserCartThunk } from "./store/thunk/cart";
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import HomePage from './pages/Home';
+import ProductDetailPage from './pages/ProductDetail';
+import RootLayout from './pages/RootLayout';
+import Register from './pages/Register';
+import { ToastContainer } from 'react-toastify';
+import Cart from './pages/Cart';
+import Login from './pages/Login';
+import { useEffect } from 'react';
+import { useAppDispatch } from './store/hooks';
+import { getProfileThunk } from './store/thunk/auth';
+import { getCartByIdThunk, getCurrentUserCartThunk } from './store/thunk/cart';
+import { CARTID_KEY } from './constants/cart.constants';
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <RootLayout />,
     children: [
       { index: true, element: <HomePage /> },
       {
-        path: "products",
-        children: [{ path: ":slug", element: <ProductDetailPage /> }],
+        path: 'products',
+        children: [{ path: ':slug', element: <ProductDetailPage /> }],
       },
       {
-        path: "register",
+        path: 'register',
         element: <Register />,
       },
       {
-        path: "login",
+        path: 'login',
         element: <Login />,
       },
       {
-        path: "cart",
+        path: 'cart',
         element: <Cart />,
       },
     ],
@@ -42,10 +43,19 @@ const App = () => {
 
   useEffect(() => {
     (async () => {
-      if (localStorage.getItem("accessToken")) {
-        await dispatch(getProfileThunk()).unwrap();
-        await dispatch(getCurrentUserCartThunk()).unwrap();
-        localStorage.removeItem("cartId");
+      const accessToken = localStorage.getItem('accessToken');
+      const anonymousCartId = localStorage.getItem(CARTID_KEY);
+      try {
+        // If accessToken is present, then make API calls to get logged in users profile and cart
+        if (accessToken) {
+          await Promise.all([dispatch(getProfileThunk()).unwrap(), dispatch(getCurrentUserCartThunk()).unwrap()]);
+          localStorage.removeItem(CARTID_KEY);
+        } else if (anonymousCartId) {
+          // only when not logged in, fetch anonymous cart details
+          await dispatch(getCartByIdThunk(anonymousCartId)).unwrap();
+        }
+      } catch (error) {
+        console.log(error);
       }
     })();
   }, []);
