@@ -1,6 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { getProfileThunk, loginThunk } from '../thunk/auth';
-import type { User } from '../../types/auth/auth.model';
+import { createSlice } from "@reduxjs/toolkit";
+import { getProfileThunk, loginThunk } from "../thunk/auth";
+import type { User } from "../../types/auth/auth.model";
 
 interface AuthState {
   user: User | null;
@@ -9,19 +9,25 @@ interface AuthState {
 }
 const initialState: AuthState = {
   user: null,
-  loading: false,
+  loading: true,
   error: null,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     logout(state) {
       state.user = null;
     },
+    reset(state) {
+      state.loading = false;
+      state.error = null;
+      state.user = null;
+    },
   },
   extraReducers: (builder) => {
+    // login
     builder.addCase(loginThunk.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -36,10 +42,16 @@ const authSlice = createSlice({
       state.user = null;
       state.error = action.payload!;
     });
-    builder.addCase(getProfileThunk.fulfilled, (state, action) => {
-      state.user = action.payload;
-    });
+    // get profile
+    builder.addCase(getProfileThunk.pending, (state) => {
+      state.loading = true;
+    }),
+      builder.addCase(getProfileThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      });
     builder.addCase(getProfileThunk.rejected, (state) => {
+      state.loading = false;
       state.user = null;
     });
   },
