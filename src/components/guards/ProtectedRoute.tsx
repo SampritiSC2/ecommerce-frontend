@@ -2,7 +2,7 @@ import type React from "react";
 import { useAppSelector } from "../../store/hooks";
 import { Navigate } from "react-router-dom";
 
-const CheckAuth = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAppSelector((state) => state.auth);
 
   if (loading) {
@@ -16,4 +16,4 @@ const CheckAuth = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
-export default CheckAuth;
+export default ProtectedRoute;
