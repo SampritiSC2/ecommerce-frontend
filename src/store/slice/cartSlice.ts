@@ -1,12 +1,12 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { CartResponse } from "../../types/cart/cart-response.model";
+import { createSlice } from '@reduxjs/toolkit';
+import type { CartResponse } from '../../types/cart/cart-response.model';
 import {
   addToCartThunk,
   deleteItemFromCartThunk,
   getCartByIdThunk,
   getCurrentUserCartThunk,
   updateShippingAddressForCartThunk,
-} from "../thunk/cart";
+} from '../thunk/cart';
 
 type CartState = {
   loading: boolean;
@@ -15,13 +15,13 @@ type CartState = {
 };
 
 const initialState: CartState = {
-  loading: false,
+  loading: true,
   error: null,
   cart: null,
 };
 
 const cartSlice = createSlice({
-  name: "cart",
+  name: 'cart',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -60,12 +60,9 @@ const cartSlice = createSlice({
       state.cart = action.payload;
     });
     // Update shipping details
-    builder.addCase(
-      updateShippingAddressForCartThunk.fulfilled,
-      (state, action) => {
-        state.cart = action.payload;
-      }
-    );
+    builder.addCase(updateShippingAddressForCartThunk.fulfilled, (state, action) => {
+      state.cart = action.payload;
+    });
   },
 });
 
