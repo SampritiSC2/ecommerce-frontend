@@ -11,6 +11,11 @@ import {
   FormControlLabel,
   Checkbox,
   Button,
+  Radio,
+  RadioGroup,
+  Card,
+  CardContent,
+  Divider,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -38,16 +43,18 @@ interface ShippingAddressProps {
   cartId: string;
   changeStep: (step: number) => void;
   shippingAddress?: ShippingAddressType;
+  savedAddresses?: ShippingAddressType[];
 }
 
-const ShippingAddress = ({ cartId, changeStep, shippingAddress }: ShippingAddressProps) => {
+const ShippingAddress = ({ cartId, changeStep, shippingAddress, savedAddresses = [] }: ShippingAddressProps) => {
   const {
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
+    reset,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    mode: 'onBlur', // validate on blur (when leaving input)
+    mode: 'onBlur',
     defaultValues: {
       firstName: shippingAddress?.firstName ?? '',
       lastName: shippingAddress?.lastName ?? '',
@@ -62,6 +69,7 @@ const ShippingAddress = ({ cartId, changeStep, shippingAddress }: ShippingAddres
   });
 
   const dispatch = useAppDispatch();
+
   const onSubmit = async (data: FormData) => {
     try {
       await dispatch(updateShippingAddressForCartThunk({ cartId, ...data })).unwrap();
@@ -71,12 +79,65 @@ const ShippingAddress = ({ cartId, changeStep, shippingAddress }: ShippingAddres
     }
   };
 
-  console.log('ShippingAddress:', shippingAddress);
+  const handleSelectAddress = (addr: ShippingAddressType) => {
+    reset({
+      firstName: addr.firstName,
+      lastName: addr.lastName,
+      addressLine1: addr.addressLine1,
+      addressLine2: addr.addressLine2 ?? '',
+      city: addr.city,
+      country: addr.country,
+      state: addr.state,
+      zipCode: addr.zipCode,
+      saveForFuture: false,
+    });
+  };
+
   return (
     <Box sx={{ marginTop: 2 }}>
       <Typography variant='h5' sx={{ fontWeight: 'bold', marginBottom: 2 }}>
         Shipping Details
       </Typography>
+
+      {/* Saved Addresses Section */}
+      {savedAddresses.length > 0 && (
+        <Box mb={3}>
+          <Typography variant='subtitle1' gutterBottom>
+            Choose a saved address
+          </Typography>
+          <RadioGroup>
+            {savedAddresses.map((addr) => (
+              <Card
+                key={addr._id}
+                variant='outlined'
+                sx={{ mb: 1, cursor: 'pointer', '&:hover': { borderColor: 'primary.main' } }}
+                onClick={() => handleSelectAddress(addr)}>
+                <CardContent sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <FormControlLabel
+                    value={addr._id}
+                    control={<Radio />}
+                    label={
+                      <Box>
+                        <Typography fontWeight='bold'>
+                          {addr.firstName} {addr.lastName}
+                        </Typography>
+                        <Typography variant='body2'>{addr.addressLine1}</Typography>
+                        {addr.addressLine2 && <Typography variant='body2'>{addr.addressLine2}</Typography>}
+                        <Typography variant='body2'>
+                          {addr.city}, {addr.state}, {addr.country} - {addr.zipCode}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </CardContent>
+              </Card>
+            ))}
+          </RadioGroup>
+          <Divider sx={{ my: 2 }} />
+        </Box>
+      )}
+
+      {/* New Address Form */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={1.5}>
           {/* First & Last Name */}
@@ -203,20 +264,22 @@ const ShippingAddress = ({ cartId, changeStep, shippingAddress }: ShippingAddres
           </Stack>
 
           {/* Save Info */}
-          <Controller
-            name='saveForFuture'
-            control={control}
-            render={({ field }) => (
-              <FormGroup>
-                <FormControlLabel
-                  control={<Checkbox {...field} checked={field.value} />}
-                  label='Save contact information'
-                />
-              </FormGroup>
-            )}
-          />
+          {!shippingAddress?.userId && (
+            <Controller
+              name='saveForFuture'
+              control={control}
+              render={({ field }) => (
+                <FormGroup>
+                  <FormControlLabel
+                    control={<Checkbox {...field} checked={field.value} />}
+                    label='Save contact information'
+                  />
+                </FormGroup>
+              )}
+            />
+          )}
 
-          {/* Submit Button (always enabled) */}
+          {/* Submit Button */}
           <Box>
             <Button type='submit' variant='contained' fullWidth sx={{ paddingY: 1.5 }} disabled={isSubmitting}>
               Continue to shipping

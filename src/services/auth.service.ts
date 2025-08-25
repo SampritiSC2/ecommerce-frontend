@@ -1,11 +1,7 @@
-import { AxiosError } from "axios";
-import type {
-  LoginResponse,
-  RegisterErrorResponse,
-  RegistrationResponse,
-  User,
-} from "../types/auth/auth.model";
-import api from "../api/api";
+import { AxiosError } from 'axios';
+import type { LoginResponse, RegisterErrorResponse, RegistrationResponse, User } from '../types/auth/auth.model';
+import api from '../api/api';
+import type { ShippingAddress } from '../types/cart/cart-response.model';
 
 export interface RegisterPayload {
   username: string;
@@ -30,10 +26,7 @@ export async function register(
   };
 
   try {
-    const response = await api.post<RegistrationResponse>(
-      "/auth/register",
-      payload
-    );
+    const response = await api.post<RegistrationResponse>('/auth/register', payload);
     return {
       message: response?.data?.message,
     };
@@ -46,22 +39,29 @@ export async function register(
   }
 }
 
-export async function login(
-  email: string,
-  password: string
-): Promise<LoginResponse> {
+export async function login(email: string, password: string): Promise<LoginResponse> {
   const payload: LoginPayload = {
     email,
     password,
   };
 
-  const response = await api.post<LoginResponse>("/auth/login", payload, {
+  const response = await api.post<LoginResponse>('/auth/login', payload, {
     withCredentials: true,
   });
   return response.data;
 }
 
 export async function getProfile(): Promise<User> {
-  const response = await api.get<User>("/auth/profile");
+  const response = await api.get<User>('/auth/profile');
   return response.data;
+}
+
+export async function getSavedAddress(): Promise<ShippingAddress[]> {
+  try {
+    const response = await api.get('/auth/user/address');
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
 }

@@ -4,24 +4,30 @@ import { useAppSelector } from '../store/hooks';
 import ShippingOptions from '../components/checkout/ShippingOptions';
 import ShippingAddress from '../components/checkout/ShippingAddress';
 import { Navigate } from 'react-router-dom';
+import { getSavedAddress } from '../services/auth.service';
+import type { ShippingAddress as ShippingAddressType } from '../types/cart/cart-response.model';
 
 const steps = ['Address', 'Shipping', 'Payment'];
 
 const CheckoutPage = () => {
   const [activeStep, setActiveStep] = useState(0);
   const { loading, cart } = useAppSelector((state) => state.cart);
+  const [savedAddresses, setSavedAddresses] = useState<ShippingAddressType[]>([]);
 
   useEffect(() => {
-    if (cart?.shippingAddress) {
-      setActiveStep(1);
-    }
-  }, [cart?.shippingAddress]);
+    (async () => {
+      const response = await getSavedAddress();
+      if (response?.length) {
+        setSavedAddresses(response);
+      }
+    })();
+  }, []);
 
   if (loading) {
     return <h2>Loading...</h2>;
   }
 
-  // If getCartById/getCurrentUserCart API is succesful but there is not cart data, navigate to home page
+  // If getCartById/getCurrentUserCart API is succesfull but there is not cart data, navigate to home page
   if (!loading && !cart?.cartId) {
     return <Navigate to='/' replace />;
   }
@@ -56,7 +62,12 @@ const CheckoutPage = () => {
             </Box>
             {/* Shipping Information Form */}
             {activeStep === 0 && (
-              <ShippingAddress cartId={cart?.cartId!} changeStep={changeStep} shippingAddress={cart?.shippingAddress} />
+              <ShippingAddress
+                cartId={cart?.cartId!}
+                changeStep={changeStep}
+                shippingAddress={cart?.shippingAddress}
+                savedAddresses={savedAddresses}
+              />
             )}
             {/* Shipping options */}
             {activeStep === 1 && <ShippingOptions changeStep={changeStep} />}
